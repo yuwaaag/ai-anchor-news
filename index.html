@@ -4,69 +4,61 @@
     <meta charset="UTF-8">
     <style>
         :root { --main-red: #cc0000; --gold: #ffcc00; }
-        body, html { margin: 0; padding: 0; width: 1920px; height: 1080px; overflow: hidden; background: transparent; font-family: 'Oswald', sans-serif; }
+        body, html { margin: 0; padding: 0; width: 1920px; height: 1080px; overflow: hidden; background: #000; font-family: 'Oswald', sans-serif; }
 
-        /* Background Scene */
+        /* News Set Background */
         .news-set {
             width: 100%; height: 100%;
-            background: url('https://images.unsplash.com/photo-1495020689067-958852a7765e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80'); 
+            background: url('https://images.unsplash.com/photo-1495020689067-958852a7765e?fit=crop&w=1920&q=80'); 
             background-size: cover;
-            display: flex; align-items: flex-end; justify-content: center;
             position: relative;
         }
 
-        /* AI Anchor Container */
-        .anchor-container {
-            position: absolute; left: 50px; bottom: 0;
-            width: 800px; height: 1000px; z-index: 5;
+        /* AI Anchor - Isko humne Right side set kiya hai taaki news left mein dikhe */
+        .anchor-box {
+            position: absolute; right: 0; bottom: 0;
+            width: 900px; height: 1000px; z-index: 100;
         }
         #anchorVideo {
             width: 100%; height: 100%; object-fit: contain;
-            filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
         }
 
-        /* News Box Design */
+        /* News Box Layout */
         .news-overlay {
-            width: 100%; height: 350px;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-            position: absolute; bottom: 0; z-index: 10;
-            display: flex; flex-direction: column; align-items: center; padding-bottom: 50px;
+            width: 100%; position: absolute; bottom: 0; z-index: 200;
+            background: linear-gradient(to top, rgba(0,0,0,1), transparent);
+            padding: 40px 0; display: flex; flex-direction: column; align-items: center;
         }
 
         .breaking-tag {
-            background: var(--main-red); color: white; padding: 10px 40px;
-            font-size: 40px; font-weight: bold; border: 4px solid var(--gold);
-            margin-bottom: 20px; animation: flash 1s infinite;
+            background: var(--main-red); color: white; padding: 15px 50px;
+            font-size: 45px; font-weight: bold; border: 4px solid var(--gold);
+            margin-bottom: 20px; box-shadow: 0 0 20px rgba(255,0,0,0.5);
         }
 
         .headline-container {
-            width: 80%; background: white; padding: 40px;
-            border-radius: 15px; border-left: 20px solid var(--main-red);
-            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+            width: 90%; background: rgba(255,255,255,0.95); padding: 50px;
+            border-radius: 10px; border-left: 25px solid var(--main-red);
         }
 
         .headline-text {
-            font-size: 60px; color: #111; margin: 0; text-align: center;
-            font-weight: bold; line-height: 1.2;
+            font-size: 65px; color: #111; margin: 0; font-weight: bold; text-align: center;
         }
-
-        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
 
 <div class="news-set">
-    <div class="anchor-container">
-        <video id="anchorVideo" muted loop>
-            <source src="https://v.ftcdn.net/06/13/46/36/700_F_613463638_p59G6gE5j6N6v7lK4T6T2Ym6p6lH6N6v_ST.mp4" type="video/mp4">
+    <div class="anchor-box">
+        <video id="anchorVideo" muted loop playsinline>
+            <source src="https://v.ftcdn.net/06/55/35/68/700_F_655356828_pEEnM6G76v8DqW78m6G8yWzKqFp6N6pA_ST.mp4" type="video/mp4">
         </video>
     </div>
 
     <div class="news-overlay">
         <div class="breaking-tag">BREAKING NEWS</div>
         <div class="headline-container">
-            <p class="headline-text" id="headline">खबरें लोड हो रही हैं...</p>
+            <p class="headline-text" id="headline">PTN NEWS: लोड हो रहा है...</p>
         </div>
     </div>
 </div>
@@ -76,7 +68,7 @@
 </audio>
 
 <script>
-    const SHEET_ID = '19sVzDeE9ey7da9DQe5LFYdPx7KEdHzVjffmh80LE2wE';
+    const SHEET_ID = '19sVzDeE9ey7da9DQe5LFYdPx7KEdHzVjffmh80LE2wE'; // Apni Nayi ID yahan check karein
     const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
     let newsData = [];
@@ -87,13 +79,8 @@
             const response = await fetch(CSV_URL + '&cb=' + Date.now());
             const data = await response.text();
             const rows = data.split(/\r?\n/);
-            newsData = rows.map(r => r.replace(/^"|"$/g, '').trim())
-                           .filter(r => r !== "" && r.toLowerCase() !== "news");
-            
-            if (newsData.length > 0 && !window.isPlaying) {
-                window.isPlaying = true;
-                showNext();
-            }
+            newsData = rows.map(r => r.replace(/^"|"$/g, '').trim()).filter(r => r !== "" && r.toLowerCase() !== "news");
+            if (newsData.length > 0 && !window.isPlaying) { window.isPlaying = true; showNext(); }
         } catch (e) { console.error("Sheet Load Error"); }
     }
 
@@ -101,8 +88,6 @@
         if (currentIndex >= newsData.length) currentIndex = 0;
         const text = newsData[currentIndex];
         document.getElementById('headline').innerText = text;
-
-        // Start Speaking & Animation
         speak(text);
         currentIndex++;
     }
@@ -112,23 +97,16 @@
         const msg = new SpeechSynthesisUtterance("ब्रेकिंग न्यूज़... " + txt);
         msg.lang = 'hi-IN';
         msg.rate = 0.9;
-
         const video = document.getElementById('anchorVideo');
         
-        msg.onstart = () => {
-            video.play(); // एंकर बोलना (वीडियो चलना) शुरू करेगा
-        };
-
-        msg.onend = () => {
-            video.pause(); // खबर खत्म तो एंकर शांत
-            setTimeout(showNext, 2000); // 2 सेकंड बाद अगली खबर
-        };
+        msg.onstart = () => { video.play(); }; // AI Anchor bolna shuru karega
+        msg.onend = () => { video.pause(); setTimeout(showNext, 2000); }; // Khushi se ruk jayega
 
         window.speechSynthesis.speak(msg);
     }
 
     window.onclick = () => {
-        document.getElementById('newsBGM').volume = 0.15;
+        document.getElementById('newsBGM').volume = 0.1;
         document.getElementById('newsBGM').play();
         loadNews();
     };
