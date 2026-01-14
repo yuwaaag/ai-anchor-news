@@ -6,24 +6,21 @@
         :root { --main-red: #cc0000; --gold: #ffcc00; }
         body, html { margin: 0; padding: 0; width: 1920px; height: 1080px; overflow: hidden; background: #000; font-family: 'Oswald', sans-serif; }
 
-        /* News Set Background */
+        /* Aapki upload ki hui studio.jpg yahan se load hogi */
         .news-set {
             width: 100%; height: 100%;
-            background: url('https://images.unsplash.com/photo-1495020689067-958852a7765e?fit=crop&w=1920&q=80'); 
+            background: url('studio.jpg'); 
             background-size: cover;
             position: relative;
         }
 
-        /* AI Anchor - Isko humne Right side set kiya hai taaki news left mein dikhe */
         .anchor-box {
             position: absolute; right: 0; bottom: 0;
-            width: 900px; height: 1000px; z-index: 100;
-        }
-        #anchorVideo {
-            width: 100%; height: 100%; object-fit: contain;
+            width: 900px; height: 1050px; z-index: 100;
         }
 
-        /* News Box Layout */
+        #anchorVideo { width: 100%; height: 100%; object-fit: contain; }
+
         .news-overlay {
             width: 100%; position: absolute; bottom: 0; z-index: 200;
             background: linear-gradient(to top, rgba(0,0,0,1), transparent);
@@ -33,7 +30,7 @@
         .breaking-tag {
             background: var(--main-red); color: white; padding: 15px 50px;
             font-size: 45px; font-weight: bold; border: 4px solid var(--gold);
-            margin-bottom: 20px; box-shadow: 0 0 20px rgba(255,0,0,0.5);
+            margin-bottom: 20px;
         }
 
         .headline-container {
@@ -41,9 +38,7 @@
             border-radius: 10px; border-left: 25px solid var(--main-red);
         }
 
-        .headline-text {
-            font-size: 65px; color: #111; margin: 0; font-weight: bold; text-align: center;
-        }
+        .headline-text { font-size: 65px; color: #111; margin: 0; font-weight: bold; text-align: center; }
     </style>
 </head>
 <body>
@@ -51,7 +46,7 @@
 <div class="news-set">
     <div class="anchor-box">
         <video id="anchorVideo" muted loop playsinline>
-            <source src="https://v.ftcdn.net/06/55/35/68/700_F_655356828_pEEnM6G76v8DqW78m6G8yWzKqFp6N6pA_ST.mp4" type="video/mp4">
+            <source src="anchor_video.mp4" type="video/mp4">
         </video>
     </div>
 
@@ -68,7 +63,7 @@
 </audio>
 
 <script>
-    const SHEET_ID = '19sVzDeE9ey7da9DQe5LFYdPx7KEdHzVjffmh80LE2wE'; // Apni Nayi ID yahan check karein
+    const SHEET_ID = '19sVzDeE9ey7da9DQe5LFYdPx7KEdHzVjffmh80LE2wE'; 
     const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
     let newsData = [];
@@ -99,8 +94,8 @@
         msg.rate = 0.9;
         const video = document.getElementById('anchorVideo');
         
-        msg.onstart = () => { video.play(); }; // AI Anchor bolna shuru karega
-        msg.onend = () => { video.pause(); setTimeout(showNext, 2000); }; // Khushi se ruk jayega
+        msg.onstart = () => { video.play(); }; 
+        msg.onend = () => { video.pause(); setTimeout(showNext, 2000); };
 
         window.speechSynthesis.speak(msg);
     }
