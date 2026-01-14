@@ -3,41 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        :root { --main-red: #cc0000; --gold: #ffcc00; }
+        :root { --main-red: #cc0000; --gold: #ffcc00; --dark-blue: #001a33; }
         body, html { margin: 0; padding: 0; width: 1920px; height: 1080px; overflow: hidden; background: #000; font-family: 'Oswald', sans-serif; }
 
-        /* Studio Background */
+        /* 1. Background Scene */
         .news-set {
             width: 100%; height: 100%;
             background: url('studio.jpg'); 
             background-size: cover;
-            background-position: center;
             position: relative;
         }
 
-        /* Mahila AI Anchor Setup */
+        /* 2. Female AI Anchor Positioning */
         .anchor-box {
-            position: absolute; right: 0; bottom: 0;
-            width: 950px; height: 1080px; z-index: 10;
+            position: absolute; right: 0; bottom: -5px;
+            width: 850px; height: 1080px; z-index: 10;
         }
-        #anchorVideo {
-            width: 100%; height: 100%; object-fit: contain;
-        }
+        #anchorVideo { width: 100%; height: 100%; object-fit: contain; }
 
-        /* Long News Overlay (Elegant Look) */
+        /* 3. Modern News Overlay - Glassmorphism Look */
         .news-overlay {
             width: 100%; position: absolute; bottom: 0; z-index: 20;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 30px 0; border-top: 5px solid var(--gold);
+            height: 250px; display: flex; align-items: flex-end;
         }
 
-        .headline-container {
-            width: 90%; margin: 0 auto;
+        /* L-Band News Style */
+        .headline-wrapper {
+            width: 70%; /* एंकर के दाईं ओर जगह छोड़ने के लिए */
+            height: 180px;
+            background: rgba(0, 26, 51, 0.9); /* Dark Blue Transparent */
+            border-top: 6px solid var(--gold);
+            display: flex; align-items: center; padding: 0 50px;
+            position: relative;
+            box-shadow: 20px 0 50px rgba(0,0,0,0.8);
+            border-radius: 0 50px 0 0;
+        }
+
+        .category-tag {
+            position: absolute; top: -50px; left: 0;
+            background: var(--main-red); color: white;
+            padding: 5px 40px; font-size: 35px; font-weight: bold;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
         }
 
         .headline-text {
-            font-size: 55px; color: #fff; margin: 0; font-weight: bold; text-align: center;
-            line-height: 1.4; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-size: 48px; color: #fff; margin: 0; font-weight: bold;
+            line-height: 1.3; border-left: 10px solid var(--gold);
+            padding-left: 30px;
+            /* Text animation for smooth entry */
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -51,8 +70,9 @@
     </div>
 
     <div class="news-overlay">
-        <div class="headline-container">
-            <p class="headline-text" id="headline">PTN NEWS: Khabrein Vistaar Se...</p>
+        <div class="headline-wrapper">
+            <div class="category-tag" id="tag">बड़ी खबर</div>
+            <p class="headline-text" id="headline">PTN NEWS: समाचार विस्तार से...</p>
         </div>
     </div>
 </div>
@@ -62,7 +82,7 @@
 </audio>
 
 <script>
-    const SHEET_ID = '19sVzDeE9ey7da9DQe5LFYdPx7KEdHzVjffmh80LE2wE'; // Apni Nayi ID check karein
+    const SHEET_ID = '19sVzDeE9ey7da9DQe5LFYdPx7KEdHzVjffmh80LE2wE'; 
     const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
     let newsData = [];
@@ -73,26 +93,21 @@
             const response = await fetch(CSV_URL + '&cb=' + Date.now());
             const data = await response.text();
             const rows = data.split(/\r?\n/);
-            // Header ko chhod kar saari news lines le raha hai
             newsData = rows.slice(1).map(r => r.replace(/^"|"$/g, '').trim()).filter(r => r !== "");
-            
-            if (newsData.length > 0 && !window.isPlaying) { 
-                window.isPlaying = true; 
-                showNext(); 
-            }
-        } catch (e) { console.error("Sheet Load Error"); }
+            if (newsData.length > 0 && !window.isPlaying) { window.isPlaying = true; showNext(); }
+        } catch (e) { console.error("Load Error"); }
     }
 
     function showNext() {
-        if (currentIndex >= newsData.length) {
-            currentIndex = 0; // Saari news khatam hone par wapas shuru karega
-            loadNews(); // Nayi news check karega
-            return;
-        }
-
-        const longNews = newsData[currentIndex];
-        document.getElementById('headline').innerText = longNews;
-        speak(longNews);
+        if (currentIndex >= newsData.length) { currentIndex = 0; loadNews(); return; }
+        const text = newsData[currentIndex];
+        
+        const headlineEl = document.getElementById('headline');
+        headlineEl.style.animation = 'none'; // Reset animation
+        setTimeout(() => { headlineEl.style.animation = ''; }, 10);
+        
+        headlineEl.innerText = text;
+        speak(text);
         currentIndex++;
     }
 
@@ -100,31 +115,21 @@
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(txt);
         msg.lang = 'hi-IN';
-        msg.rate = 0.95; // News padhne ki speed
-        msg.pitch = 1.1; // Mahila anchor ke liye thodi sharp voice
+        msg.rate = 0.95; 
+        msg.pitch = 1.1; 
         
         const video = document.getElementById('anchorVideo');
-        
-        msg.onstart = () => { 
-            video.play(); // Video tab tak chalega jab tak news padhi ja rahi hai
-        }; 
-
-        msg.onend = () => { 
-            video.pause(); 
-            setTimeout(showNext, 3000); // Ek news khatam hone ke 3 second baad doosri shuru hogi
-        };
-
+        msg.onstart = () => { video.play(); }; 
+        msg.onend = () => { video.pause(); setTimeout(showNext, 3000); };
         window.speechSynthesis.speak(msg);
     }
 
-    // OBS Interact karke click karna zaroori hai
     window.onclick = () => {
-        document.getElementById('newsBGM').volume = 0.08; // Background music ko dheema rakha hai
+        document.getElementById('newsBGM').volume = 0.08;
         document.getElementById('newsBGM').play();
         loadNews();
     };
-
-    setInterval(loadNews, 300000); // Har 5 minute mein news update check karega
+    setInterval(loadNews, 300000);
 </script>
 
 </body>
